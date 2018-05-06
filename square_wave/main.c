@@ -1,11 +1,12 @@
 #include "msp.h"
 
 #define MAX_VALUE 4096
-#define THREE_V   1890
+#define THREE_V   2000
 #define TWO_V     1280
 #define ONE_V     650
 
-#define TIMER_OFFSET 60000
+#define TIMER_OFFSET_0 60000
+#define TIMER_OFFSET_1 10000
 
 volatile unsigned int Counter = 0;
 volatile unsigned int TempDAC_Value = THREE_V;
@@ -39,12 +40,19 @@ void Drive_DAC(unsigned int level){
 
 void TA0_0_IRQHandler(void) {
     TIMER_A0->CCTL[0] &= ~TIMER_A_CCTLN_CCIFG;
-    TIMER_A0->CCR[0] += TIMER_OFFSET;              // Add Offset to TACCR0
 
     Counter++;
 
     if (Counter == 4) {
-        TempDAC_Value = TempDAC_Value == THREE_V ? ONE_V : THREE_V;
+        if (TempDAC_Value == THREE_V) {
+            TempDAC_Value = 0;
+            TIMER_A0->CCR[0] += TIMER_OFFSET_1;
+        }
+        else if (TempDAC_Value == 0) {
+            TempDAC_Value = THREE_V;
+            TIMER_A0->CCR[0] += TIMER_OFFSET_0;
+        }
+        // TempDAC_Value = TempDAC_Value == THREE_V ? 0 : THREE_V; //if tempdac is threev, then change it to zero else: it'll be threev
         Counter = 0;
     }
 
@@ -83,7 +91,7 @@ int main() {
   EUSCI_B0->IFG |= EUSCI_B_IFG_TXIFG;  // Clear TXIFG flag
 
   TIMER_A0->CCTL[0] = TIMER_A_CCTLN_CCIE; // TACCR0 interrupt enabled
-  TIMER_A0->CCR[0] = TIMER_OFFSET;
+  TIMER_A0->CCR[0] = TIMER_OFFSET_0;
 
 
 
