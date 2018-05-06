@@ -1,0 +1,8 @@
+
+**** Build of configuration Debug for project a5_try ****
+
+"C:\\ti\\ccsv8\\utils\\bin\\gmake" -k -j 8 all -O 
+ 
+gmake[1]: 'a5_try.out' is up to date.
+
+**** Build Finished ****
