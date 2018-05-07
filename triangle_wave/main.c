@@ -14,8 +14,10 @@
 //12000 makes 100 hz?
 #define TIMER_OFFSET 3000
 
+volatile unsigned int freq_wanted = 500; //eventually change so this value also changes Timer offset
+
 volatile unsigned int timesISR = 0;
-volatile unsigned int tempDAC_Value = THREE_V;
+volatile unsigned int TempDAC_Value = THREE_V;
 
 void Drive_DAC(unsigned int level){
   unsigned int DAC_Word = 0;
@@ -48,17 +50,22 @@ void TA0_0_IRQHandler(void) {
     TIMER_A0->CCTL[0] &= ~TIMER_A_CCTLN_CCIFG; //clear intr for ccr0
     TIMER_A0->CCR[0] += TIMER_OFFSET;              // Add Offset to intr TACCR0
 
-    timesISR++;
-
-    if (timesISR == 8) {            //should be 20% duty cycle
-        tempDAC_Value = ONE_V;
-    }
-    else if (timesISR == 20){
-        tempDAC_Value = THREE_V;
+    timesISR += (freq_wanted/500);
+    TempDAC_Value += 68;
+//
+//    if (timesISR == 8) {            //should be 20% duty cycle
+//        tempDAC_Value = ONE_V;
+//    }
+//    else if (timesISR == 20){
+//        tempDAC_Value = THREE_V;
+//        timesISR = 0;
+//    }
+    if (timesISR == 20){
+        TempDAC_Value = ONE_V; //TempDAC_Value == THREE_V ? 0 : THREE_V;
         timesISR = 0;
     }
 
-    Drive_DAC(tempDAC_Value);
+    Drive_DAC(TempDAC_Value);
 }
 
 int main() {
